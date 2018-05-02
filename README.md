@@ -7,7 +7,7 @@
 ## 思路
 
 * 评论 API：
-  * https://api.bilibili.com/x/v2/reply?pn=1&type=1&oid=22755224
+  * https://api.bilibili.com/x/v2/reply?pn=1&oid=22755224&type=1&sort=0&nohot=1
   * type=1
   * pn：页数
   * oid：视频av号
