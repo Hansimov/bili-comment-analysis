@@ -45,27 +45,45 @@ def getPageNum(req_json):
     return page_num
 
 
-def getAllComments(oid=22755224):
-    page_num, _ = getCommentPage(oid, xtype=1, sort=0, nohot=1, pn=1, is_get_page_num=1)
+def getAllComments(oid=22755224, xtype=1, sort=0, nohot=1, pn=1):
+    page_num, _ = getCommentPage(oid=oid, xtype=xtype, sort=sort, nohot=nohot, pn=pn, is_get_page_num=1)
     for i in range(2, page_num + 1):
-        getCommentPage(pn=i)
+        getCommentPage(oid=oid, xtype=xtype, sort=sort, nohot=nohot, pn=i)
 
-def combineJsonFiles():
+def combineJsonFiles(combined_jsonfile_name='allcomments.json'):
     # Issue with merging multiple JSON files in Python:
     #   https://stackoverflow.com/a/23520673/8328786
-    jsonfile_combined = []
+    combined_jsonfile = []
     page_num = 0
     for jsonfile in glob.glob("./comments/*.json"):
         page_num += 1
-        with open(jsonfile, "r") as infile:
-            jsonfile_combined.append(json.load(infile))
+        with open(jsonfile, 'r') as infile:
+            combined_jsonfile.append(json.load(infile))
 
     print('+ Number of combined json files: {}'.format(page_num))
-    with open("allcomments.json", "w") as outfile:
-         json.dump(jsonfile_combined, outfile)
+    with open(combined_jsonfile_name, 'w') as outfile:
+         json.dump(combined_jsonfile, outfile)
 
-def 
+'''
+
+`data` -> `replies` -> `[i=0:19]` ->
+
+|        内容        | 点赞数 |     回复数     | 楼层  |      用户       | mid |     时间     | 时间戳 |
+|        :-:         |  :-:   |      :-:       |  :-:  |       :-:       | :-: |     :-:      |  :-:   |
+| content -> message |  like  | replies.length | floor | member -> uname | mid | ctime.toTime | ctime  |
+
+'''
+
+def processCombinedJsonFile(combined_jsonfile_name):
+    with open(combined_jsonfile_name, 'r') as combined_jsonfile:
+        combined_data = json.load(combined_jsonfile)
+        # print(len(data))
+        print(combined_data[0]['data']['replies'][0]['content']['message'])
+        print(combined_data[0]['data']['replies'][0]['floor'])
 
 if __name__ == '__main__':
     # getAllComments()
-    # combineJsonFiles()
+    combined_jsonfile_name = 'allcomments.json'
+    # combineJsonFiles(combined_jsonfile_name)
+    processCombinedJsonFile(combined_jsonfile_name)
+
