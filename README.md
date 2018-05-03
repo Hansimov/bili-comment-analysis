@@ -236,7 +236,7 @@
 
 `data` -> `replies` -> `[i=0:19]` ->
 
-|        内容        | 点赞数 |     回复数     | 楼层  |      用户       | mid |     时间     | 时间戳 |
+|        消息        | 点赞数 |     回复数     | 楼层  |      用户       | mid |     时间     | 时间戳 |
 |        :-:         |  :-:   |      :-:       |  :-:  |       :-:       | :-: |     :-:      |  :-:   |
 | content -> message |  like  | replies.length | floor | member -> uname | mid | ctime.toTime | ctime  |
 
