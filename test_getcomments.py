@@ -2,6 +2,7 @@ import requests
 import json
 import math
 import glob
+from datetime import datetime
 
 # https://api.bilibili.com/x/v2/reply?oid=22755224&type=1&sort=0&nohot=1&pn=1
 
@@ -74,24 +75,15 @@ def combineJsonFiles(combined_jsonfile_name='allcomments.json'):
          json.dump(combined_jsonfile, outfile)
 
 
-'''
-
-`data` -> `replies` -> `[i=0:19]` ->
-
-| 楼层  |        消息        | 点赞数 |     回复数     |      用户       | mid |     时间     | 时间戳 |
-|  :-:  |        :-:         |  :-:   |      :-:       |       :-:       | :-: |     :-:      |  :-:   |
-| floor | content -> message |  like  | replies.length | member -> uname | mid | ctime.toTime | ctime  |
-
-'''
 
 def processCombinedJsonFile(combined_jsonfile_name):
     with open(combined_jsonfile_name, 'r') as combined_jsonfile:
         replies_mdfile = open('replies.md','w')
         combined_data = json.load(combined_jsonfile)
         # print('|楼层|消息|点赞数|回复数|用户|')
-        print('  | 楼层 | 消息 | 点赞数 | 回复数 | 用户 |', file=replies_mdfile)
+        print('| 楼层 | 时间 | 用户 | 消息 | 点赞数 | 回复数 |', file=replies_mdfile)
         # print(' |  -   |  -   |   -    | -      | -    |')
-        print('  | :-:  |  -   |  :-:   |   :-:  | -    |', file=replies_mdfile)
+        print('| :-:  |  :-:   |  -   |   -  | :-:  | :-: |', file=replies_mdfile)
 
         for page in range(0, len(combined_data)):
             current_page_replies = combined_data[page]['data']['replies']
@@ -102,16 +94,14 @@ def processCombinedJsonFile(combined_jsonfile_name):
                 current_reply = current_page_replies[item]
 
                 floor_str = current_reply['floor']
+                time_str = datetime.fromtimestamp(current_reply['ctime'])
+                uname_str = current_reply['member']['uname'].encode('gbk','ignore').decode('gbk')
                 message_str = current_reply['content']['message'].replace('\r','').replace('\n','<br>').encode('gbk','ignore').decode('gbk')
                 like_num = current_reply['like']
-                replies_num = len(current_reply['replies'])
-                uname_str = current_reply['member']['uname'].encode('gbk','ignore').decode('gbk')
+                replies_num = current_reply['rcount']
 
-                reply_str = '| {} | {} | {} | {} | {} |'.format( floor_str,
-                                                                        message_str,
-                                                                        like_num,
-                                                                        replies_num,
-                                                                        uname_str)
+                reply_str = '| {} | {} | {} | {} | {} | {} |'.format( 
+                    floor_str, time_str, uname_str, message_str, like_num, replies_num)
                 # print(reply_str)
                 print(reply_str, file = replies_mdfile)
         replies_mdfile.close()
