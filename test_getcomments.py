@@ -179,8 +179,8 @@ def calcWordFrequency(replies_only_txt_name, topnum=-1):
 
 if __name__ == '__main__':
     this_oid = 22755224
-    # getAllRepliesFiles(this_oid)
-    # combineRepliesFiles(this_oid)
+    getAllRepliesFiles(this_oid)
+    combineRepliesFiles(this_oid)
     exportReplies(this_oid, fmt='full')
     # replies_only_txt_name = exportReplies(this_oid, fmt='only')
     # calcWordFrequency(replies_only_txt_name)
