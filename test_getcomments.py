@@ -124,8 +124,13 @@ def exportReplies(oid, fmt='full',ext=''):
 
                 floor_str = current_reply['floor']
                 time_str = datetime.fromtimestamp(current_reply['ctime'])
-                uname_str = current_reply['member']['uname'].encode('gbk','ignore').decode('gbk')
-                message_str = current_reply['content']['message'].replace('\r','').replace('\n','<br>').encode('gbk','ignore').decode('gbk')
+                # [gitbook markdown] How to insert vertical line "|" into table?
+                #   https://github.com/GitbookIO/gitbook/issues/1004
+                uname_str = current_reply['member']['uname'] \
+                            .replace('|','&#124;').encode('gbk','ignore').decode('gbk')
+                message_str = current_reply['content']['message'] \
+                            .replace('|','&#124;').replace('\r','').replace('\n','<br>') \
+                            .encode('gbk','ignore').decode('gbk')
                 like_num = current_reply['like']
                 replies_num = current_reply['rcount']
 
@@ -174,8 +179,8 @@ def calcWordFrequency(replies_only_txt_name, topnum=-1):
 
 if __name__ == '__main__':
     this_oid = 22755224
-    getAllRepliesFiles(this_oid)
-    combineRepliesFiles(this_oid)
+    # getAllRepliesFiles(this_oid)
+    # combineRepliesFiles(this_oid)
     exportReplies(this_oid, fmt='full')
     # replies_only_txt_name = exportReplies(this_oid, fmt='only')
     # calcWordFrequency(replies_only_txt_name)
