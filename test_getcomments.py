@@ -142,17 +142,7 @@ def exportReplies(oid, fmt='full',ext=''):
 
         return replies_export_file_name
 
-def wordFrequency(topnum=-1):
-    pass
-
-
-if __name__ == '__main__':
-    this_oid = 22755224
-    # getAllRepliesFiles(this_oid)
-    # combineRepliesFiles(this_oid)
-    # exportReplies(this_oid, fmt='full')
-    replies_only_txt_name = exportReplies(this_oid, fmt='only')
-
+def calcWordFrequency(replies_only_txt_name, topnum=-1):
     jieba.load_userdict('bili_dict.txt')
     with open(replies_only_txt_name,'r') as replies_only_txt:
         # replies_only_txt_content = replies_only_txt.read()
@@ -181,4 +171,11 @@ if __name__ == '__main__':
                 # print(tag, tag_dict[tag])
         for tag in sorted(tag_dict, key=tag_dict.get, reverse=True):
             print(tag, tag_dict[tag])
-        
+
+if __name__ == '__main__':
+    this_oid = 22755224
+    getAllRepliesFiles(this_oid)
+    combineRepliesFiles(this_oid)
+    exportReplies(this_oid, fmt='full')
+    # replies_only_txt_name = exportReplies(this_oid, fmt='only')
+    # calcWordFrequency(replies_only_txt_name)
