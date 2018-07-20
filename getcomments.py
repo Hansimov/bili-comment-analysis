@@ -4,7 +4,7 @@ import math
 import glob
 from datetime import datetime
 import os
-import jieba, jieba.analyse
+# import jieba, jieba.analyse
 
 # https://api.bilibili.com/x/v2/reply?oid=22755224&type=1&sort=0&nohot=1&pn=1
 
@@ -13,18 +13,43 @@ url_head = 'https://api.bilibili.com/x/v2/reply?'
 #         'Referer':'https://www.bilibili.com/video'
 #         }
 
+'''
+### File Structure
+  replies
+    |- 0000123456
+      |- pages
+        |- 00001.json
+        |- 00002.json
+        |- 00003.json
+        |- ...
+      |- __0000123456.json
+    |- 0000654321
+      |- pages
+        |- ...
+      |- __0000123456.json
+    |- 0000123456.csv
+    |- 0000123456.md
+    |- 0000654321.csv
+    |- 0000654321.md
+    |- ...
+
+'''
 
 def nameRepliesDir(oid):
-    replies_dir = 'replies_' + '{:0>10d}'.format(oid)
+    # replies_dir = 'replies_' + '{:0>10d}'.format(oid)
+    replies_dir = 'replies/' + '{:0>10d}'.format(oid)
     return replies_dir
 
 def getRepliesFile(oid, xtype=1, sort=0, nohot=1, pn=1, is_get_page_num=0, is_get_req_json=0):
-    replies_dir = nameRepliesDir(oid)
-    replies_pages_dir = replies_dir + '/pages'
+    if not os.path.exists('replies'):
+        os.mkdir('replies')
 
-    if not os.path.exists(replies_dir): 
+    replies_dir = nameRepliesDir(oid)
+    if not os.path.exists(replies_dir):
         os.mkdir(replies_dir)
-    if not os.path.exists(replies_pages_dir): 
+
+    replies_pages_dir = replies_dir + '/pages'
+    if not os.path.exists(replies_pages_dir):
         os.mkdir(replies_pages_dir)
 
     url_full = url_head \
@@ -43,7 +68,7 @@ def getRepliesFile(oid, xtype=1, sort=0, nohot=1, pn=1, is_get_page_num=0, is_ge
     except:
         pass
 
-    with open((replies_dir+'/pages/{:0>4d}.json').format(pn),'w', encoding='utf-8') as jsonfile:
+    with open((replies_dir+'/pages/{:0>5d}.json').format(pn),'w', encoding='utf-8') as jsonfile:
         json.dump(req_json, jsonfile)
 
     if is_get_page_num == 1:
@@ -78,7 +103,7 @@ def combineRepliesFiles(oid):
     page_num = 0
     replies_dir = nameRepliesDir(oid)
     replies_pages_dir = replies_dir + '/pages'
-    combined_replies_file_name = replies_dir + '/__' + replies_dir + '.json'
+    combined_replies_file_name = '{}/__{:0>10d}.json'.format(replies_dir, oid)
     for jsonfile in glob.glob(replies_pages_dir+'/*.json'):
         page_num += 1
         with open(jsonfile, 'r') as infile:
@@ -96,16 +121,16 @@ def combineRepliesFiles(oid):
 
 def exportReplies(oid, fmt='full',ext=''):
     replies_dir = nameRepliesDir(oid)
-    combined_replies_file_name = replies_dir + '/__' + replies_dir + '.json'
+    combined_replies_file_name = '{}/__{:0>10d}.json'.format(replies_dir, oid)
 
     if fmt == 'full':
         if ext == '':
             ext = '.md'
-        replies_export_file_name = replies_dir + '/'+ replies_dir + ext
+        replies_export_file_name = 'replies/{:0>10d}{}'.format(oid, ext)
     elif fmt == 'only':
         if ext == '':
             ext = '.txt'
-        replies_export_file_name = replies_dir + '/'+ replies_dir + ext
+        replies_export_file_name = 'replies/{:0>10d}{}'.format(oid, ext)
 
     with open(combined_replies_file_name, 'r') as combined_replies_file:
         replies_export_file = open(replies_export_file_name,'w')
@@ -167,42 +192,48 @@ def exportReplies(oid, fmt='full',ext=''):
 
         return replies_export_file_name
 
-def calcWordFrequency(replies_only_txt_name, topnum=-1):
-    jieba.load_userdict('bili_dict.txt')
-    with open(replies_only_txt_name,'r') as replies_only_txt:
-        # replies_only_txt_content = replies_only_txt.read()
-        # print('---')
-        # print(replies_only_txt_content)
-        # with open(nameRepliesDir(this_oid)+'_word_freq','w') as word_freq_file:
-        #     print(replies_only_txt_content,file=word_freq_file)
+# def calcWordFrequency(replies_only_txt_name, topnum=-1):
+#     jieba.load_userdict('bili_dict.txt')
+#     with open(replies_only_txt_name,'r') as replies_only_txt:
+#         # replies_only_txt_content = replies_only_txt.read()
+#         # print('---')
+#         # print(replies_only_txt_content)
+#         # with open(nameRepliesDir(this_oid)+'_word_freq','w') as word_freq_file:
+#         #     print(replies_only_txt_content,file=word_freq_file)
 
-        # 使用python对中文文档进行词频统计
-        #   https://blog.csdn.net/levy_cui/article/details/53129506
+#         # 使用python对中文文档进行词频统计
+#         #   https://blog.csdn.net/levy_cui/article/details/53129506
 
-        tag_dict = {}
-        with open('bili_dict.txt','r',encoding='utf-8') as bili_dict:
-            for line in bili_dict:
-                tag = line.strip('\n')
-                tag_dict[tag] = 0
-                # print(tag)
+#         tag_dict = {}
+#         with open('bili_dict.txt','r',encoding='utf-8') as bili_dict:
+#             for line in bili_dict:
+#                 tag = line.strip('\n')
+#                 tag_dict[tag] = 0
+#                 # print(tag)
 
-        for line in replies_only_txt:
-            tags = jieba.analyse.extract_tags(line)
-            # print(line.strip('\n'))
-            for tag in tags:
-                if tag in tag_dict:
-                    tag_dict[tag] +=1
+#         for line in replies_only_txt:
+#             tags = jieba.analyse.extract_tags(line)
+#             # print(line.strip('\n'))
+#             for tag in tags:
+#                 if tag in tag_dict:
+#                     tag_dict[tag] +=1
 
-                # print(tag, tag_dict[tag])
-        for tag in sorted(tag_dict, key=tag_dict.get, reverse=True):
-            print(tag, tag_dict[tag])
+#                 # print(tag, tag_dict[tag])
+#         for tag in sorted(tag_dict, key=tag_dict.get, reverse=True):
+#             print(tag, tag_dict[tag])
 
 if __name__ == '__main__':
-    # this_oid = 22755224 # B站分区播放量
-    # this_oid = 24929108 # 黑凤梨VC
-    this_oid = 308040 # 千年食谱颂
-    getAllRepliesFiles(this_oid)
-    combineRepliesFiles(this_oid)
-    exportReplies(this_oid, fmt='full', ext='.csv')
-    # replies_only_txt_name = exportReplies(this_oid, fmt='only')
-    # calcWordFrequency(replies_only_txt_name)
+    oid_list = [
+        13592834, # Test Video
+    ]
+    # oid = 22755224 # B站分区播放量
+    # oid = 24929108 # 黑凤梨VC
+    # oid =   308040 # 千年食谱颂
+    for oid in oid_list:
+        getAllRepliesFiles(oid)
+        combineRepliesFiles(oid)
+        exportReplies(oid, fmt='full', ext='.csv')
+        # exportReplies(oid, fmt='full', ext='.md')
+        # replies_only_txt_name = exportReplies(oid, fmt='only')
+
+        # calcWordFrequency(replies_only_txt_name)
