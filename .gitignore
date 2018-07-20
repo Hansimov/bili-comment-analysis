@@ -1,2 +1,4 @@
-replies/
-*.json
+*.*
+!.gitignore
+!*.py
+!README.md
