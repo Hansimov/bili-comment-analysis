@@ -4,6 +4,8 @@ import math
 import glob
 from datetime import datetime
 import os
+import time
+import sys
 # import jieba, jieba.analyse
 
 # https://api.bilibili.com/x/v2/reply?oid=22755224&type=1&sort=0&nohot=1&pn=1
@@ -40,7 +42,7 @@ def nameRepliesDir(oid):
     replies_dir = 'replies/' + '{:0>10d}'.format(oid)
     return replies_dir
 
-def getRepliesFile(oid, xtype=1, sort=0, nohot=1, pn=1, is_get_page_num=0, is_get_req_json=0):
+def getRepliesFile(oid, xtype=1, sort=0, nohot=1, pn=1, is_get_page_num=1, is_get_req_json=0):
     if not os.path.exists('replies'):
         os.mkdir('replies')
 
@@ -59,7 +61,7 @@ def getRepliesFile(oid, xtype=1, sort=0, nohot=1, pn=1, is_get_page_num=0, is_ge
                + '&nohot=' + str(nohot) \
                + '&pn='    + str(pn)
 
-    print('> Getting replies of av {:0>10d} at page: {:0>4d}'.format(oid,pn))
+    # print('> Getting replies of av {:0>10d} at page: {:0>4d}'.format(oid,pn))
     req_info = requests.get(url_full)
     req_json = req_info.json()
 
@@ -76,6 +78,8 @@ def getRepliesFile(oid, xtype=1, sort=0, nohot=1, pn=1, is_get_page_num=0, is_ge
     else:
         page_num = -1
 
+    sys.stdout.write('\r> Getting replies of av {:0>10d} at page: {:0>5d} / {:0>5d}'.format(oid,pn,page_num))
+
     if is_get_req_json == 1:
         pass
     else:
@@ -83,18 +87,18 @@ def getRepliesFile(oid, xtype=1, sort=0, nohot=1, pn=1, is_get_page_num=0, is_ge
 
     return page_num, req_json
 
-
 def getPageNum(req_json):
     replies_count = req_json['data']['page']['count']
     page_size = req_json['data']['page']['size']
     page_num = math.ceil(replies_count/page_size)
     return page_num
 
-
 def getAllRepliesFiles(oid, xtype=1, sort=0, nohot=1, pn=1):
     page_num, _ = getRepliesFile(oid=oid, xtype=xtype, sort=sort, nohot=nohot, pn=pn, is_get_page_num=1)
     for i in range(2, page_num + 1):
+        time.sleep(0.1) # Slow down crawler to avoid being banned.
         getRepliesFile(oid=oid, xtype=xtype, sort=sort, nohot=nohot, pn=i)
+    print('')
 
 def combineRepliesFiles(oid):
     # Issue with merging multiple JSON files in Python:
@@ -117,7 +121,6 @@ def combineRepliesFiles(oid):
          json.dump(combined_replies_file, outfile)
 
     return combined_replies_file_name
-
 
 def exportReplies(oid, fmt='full',ext=''):
     replies_dir = nameRepliesDir(oid)
@@ -187,7 +190,7 @@ def exportReplies(oid, fmt='full',ext=''):
 
                 print(reply_str, file = replies_export_file)
 
-        print('Exporting {} ...'.format(replies_export_file_name))
+        print('Exporting {} ...\n'.format(replies_export_file_name))
         replies_export_file.close()
 
         return replies_export_file_name
