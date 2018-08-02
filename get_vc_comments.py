@@ -6,12 +6,14 @@ import csv
 if __name__ == '__main__':
     oid_list = []
 
-    with open('./tmp/vclist.csv',encoding='utf8',mode='r') as vcf:
-        reader = csv.reader(vcf)
-        next(reader, None)
-        for row in reader:
-            oid = int(row[0])
-            oid_list.append(oid)
+    # with open('./tmp/vclist.csv',encoding='utf8',mode='r') as vcf:
+    #     reader = csv.reader(vcf)
+    #     next(reader, None)
+    #     for row in reader:
+    #         oid = int(row[0])
+    #         oid_list.append(oid)
+
+    oid_list = [24180113] # Temp
 
     cnt = 0
     for oid in oid_list:
